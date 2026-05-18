@@ -18,3 +18,16 @@ Projeto desenvolvido para a disciplina de Análise e Projeto de Sistemas (APS) p
 * Denilson Rodrigues
 * Pedro Henrik
 * Gustavo Davi
+
+
+## 🔑 Credenciais para Teste
+
+Para testar o sistema LabReserve, pode utilizar as seguintes contas pré-configuradas no banco de dados:
+
+### 👨‍🏫 Perfil: Professor / Administrador
+* **E-mail:** tuca@ifpb.edu.br
+* **Senha:** 123456
+
+### 👨‍🎓 Perfil: Aluno / Usuário comum
+* **E-mail:** pedro@aluno.ifpb.edu.br
+* **Senha:** 123
