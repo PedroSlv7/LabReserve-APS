@@ -5,6 +5,7 @@ import com.labreserve.labreserve.model.Reserva;
 import com.labreserve.labreserve.model.Usuario;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,11 +20,11 @@ public class Repositorio {
     private static int proximoIdLab = 6;
 
     static {
-        // --- USUÁRIOS DO IFPB ---
-        usuarios.add(new Usuario(1, "Prof. Tuca", "IF-1001", "Professor"));
-        usuarios.add(new Usuario(2, "Prof. Alvaro Magnum", "IF-1002", "Professor"));
-        usuarios.add(new Usuario(3, "Pedro", "MAT-202401", "Aluno"));
-        usuarios.add(new Usuario(4, "Denilson", "MAT-202402", "Aluno"));
+        // --- UTILIZADORES DO IFPB (Agora com Email, Palavra-passe e Tipo corretos do Documento) ---
+        usuarios.add(new Usuario(1, "Prof. Tuca", "Admin", "tuca@ifpb.edu.br", "123456"));
+        usuarios.add(new Usuario(2, "Prof. Alvaro", "Admin", "alvaro@ifpb.edu.br", "123456"));
+        usuarios.add(new Usuario(3, "Pedro", "Comum", "pedro@aluno.ifpb.edu.br", "123"));
+        usuarios.add(new Usuario(4, "Denilson", "Comum", "denilson@aluno.ifpb.edu.br", "123"));
 
         // --- LABORATÓRIOS DO IFPB ---
         laboratorios.add(new Laboratorio(1, "Lab. Química", 20, "Bancadas, Reagentes, Capela de Exaustão"));
@@ -33,32 +34,24 @@ public class Repositorio {
         laboratorios.add(new Laboratorio(5, "Lab. Info 4", 25, "25 PCs, Internet Fibra, Ar-condicionado"));
     }
 
-    // RF04 - Verificação de Disponibilidade Avançada (Trata conflito de Turno Inteiro vs Frações)
-    public static boolean verificarDisponibilidade(Laboratorio lab, LocalDate data, String horarioSolicitado) {
+    // Novo Método: Busca o utilizador pelo email e valida a palavra-passe
+    public static Usuario realizarLogin(String email, String senha) {
+        for (Usuario u : usuarios) {
+            if (u.fazerLogin(email, senha)) {
+                return u;
+            }
+        }
+        return null;
+    }
+
+    // RF04 - Verificação de Disponibilidade com LocalTime (Lógica matemática de conflito)
+    public static boolean verificarDisponibilidade(Laboratorio lab, LocalDate data, LocalTime horarioInicio, LocalTime horarioFim) {
         for (Reserva r : reservas) {
-            if (r.getLaboratorio().getNome().equals(lab.getNome()) && r.getData().equals(data)) {
-                String hExistente = r.getHorario();
-
-                // 1. Se os horários forem exatamente iguais, há conflito óbvio.
-                if (hExistente.equals(horarioSolicitado)) {
-                    return false;
-                }
-
-                // 2. Se a reserva existente for o Turno Inteiro da Manhã, bloqueia qualquer fração da manhã.
-                if (hExistente.contains("Manhã: Turno Inteiro") && horarioSolicitado.contains("Manhã")) {
-                    return false;
-                }
-                // Vice-versa: Se tentar reservar Turno Inteiro da Manhã mas já houver fração da manhã reservada.
-                if (horarioSolicitado.contains("Manhã: Turno Inteiro") && hExistente.contains("Manhã")) {
-                    return false;
-                }
-
-                // 3. Se a reserva existente for o Turno Inteiro da Tarde, bloqueia qualquer fração da tarde.
-                if (hExistente.contains("Tarde: Turno Inteiro") && horarioSolicitado.contains("Tarde")) {
-                    return false;
-                }
-                // Vice-versa: Se tentar reservar Turno Inteiro da Tarde mas já houver fração da tarde reservada.
-                if (horarioSolicitado.contains("Tarde: Turno Inteiro") && hExistente.contains("Tarde")) {
+            if (r.getLaboratorio().getIdLaboratorio() == lab.getIdLaboratorio() && r.getData().equals(data)) {
+                // Lógica de intersecção de tempo:
+                // Se o início desejado for ANTES do fim da reserva existente
+                // E o fim desejado for DEPOIS do início da reserva existente -> HÁ CONFLITO!
+                if (horarioInicio.isBefore(r.getHorarioFim()) && horarioFim.isAfter(r.getHorarioInicio())) {
                     return false;
                 }
             }
@@ -66,13 +59,13 @@ public class Repositorio {
         return true;
     }
 
-    public static void salvarReserva(Usuario usuario, Laboratorio lab, LocalDate data, String horario) {
-        Reserva nova = new Reserva(proximoIdReserva++, usuario, lab, data, horario, "Pendente");
+    public static void salvarReserva(Usuario usuario, Laboratorio lab, LocalDate data, LocalTime inicio, LocalTime fim) {
+        Reserva nova = new Reserva(proximoIdReserva++, usuario, lab, data, inicio, fim, "Pendente");
         reservas.add(nova);
     }
 
-    public static void cadastrarUsuario(String nome, String identificacao, String tipo) {
-        usuarios.add(new Usuario(proximoIdUsuario++, nome, identificacao, tipo));
+    public static void cadastrarUsuario(String nome, String tipo, String email, String senha) {
+        usuarios.add(new Usuario(proximoIdUsuario++, nome, tipo, email, senha));
     }
 
     public static void cadastrarLaboratorio(String nome, int capacidade, String recursos) {

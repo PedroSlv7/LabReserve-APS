@@ -1,24 +1,29 @@
 package com.labreserve.labreserve.model;
 
 public class Usuario {
-    private int id;
+    private int idUsuario; // Nome igual ao diagrama
     private String nome;
-    private String identificacao;
-    private String tipo; // "Professor" ou "Aluno"
+    private String tipo;   // "Admin" ou "Comum"
+    private String email;  // Novo atributo do diagrama
+    private String senha;  // Novo atributo do diagrama
 
-    public Usuario(int id, String nome, String identificacao, String tipo) {
-        this.id = id;
+    public Usuario(int idUsuario, String nome, String tipo, String email, String senha) {
+        this.idUsuario = idUsuario;
         this.nome = nome;
-        this.identificacao = identificacao;
         this.tipo = tipo;
+        this.email = email;
+        this.senha = senha;
     }
 
-    public String getNome() {
-        return nome;
-    }
+    public int getIdUsuario() { return idUsuario; }
+    public String getNome() { return nome; }
+    public String getTipo() { return tipo; }
+    public String getEmail() { return email; }
+    public String getSenha() { return senha; }
 
-    public String getTipo() {
-        return tipo;
+    // Método exigido no diagrama de classes
+    public boolean fazerLogin(String emailTentativa, String senhaTentativa) {
+        return this.email.equals(emailTentativa) && this.senha.equals(senhaTentativa);
     }
 
     @Override
